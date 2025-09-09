@@ -1,0 +1,14 @@
+# Java Maven build directories
+target/
+
+# Python virtual environment
+venv/
+
+# Node.js dependencies
+node_modules/
+
+# IDE files
+*.iml
+
+# System files
+.DS_Store
