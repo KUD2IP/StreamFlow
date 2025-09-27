@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Silent Check SSO</title>
+</head>
+<body>
+    <script>
+        // Этот файл используется Keycloak для silent check-sso
+        // Он должен быть доступен по URL: window.location.origin + '/silent-check-sso.html'
+        parent.postMessage(location.href, location.origin);
+    </script>
+</body>
+</html>
