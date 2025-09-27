@@ -9,7 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="discovery-service" />
       </profile>
-      <profile name="Annotation profile for video-service" enabled="true">
+      <profile name="Annotation profile for gateway-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -19,8 +19,8 @@
         <module name="comment-service" />
         <module name="subscription-service" />
         <module name="video-service" />
-        <module name="notification-service" />
         <module name="gateway-service" />
+        <module name="notification-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

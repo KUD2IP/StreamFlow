@@ -7,55 +7,57 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/StreamFlow
-          jwk-set-uri: http://localhost:8080/realms/StreamFlow/protocol/openid-connect/certs
+          issuer-uri: ${ISSUER_URL}
+          jwk-set-uri: ${JWT_SET_URL}
   
 
   # Gateway конфигурация
   cloud:
     gateway:
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOriginPatterns:
-              - "http://localhost:3000"
-              - "http://localhost:3001"
-            allowedMethods:
-              - "GET"
-              - "POST"
-              - "PUT"
-              - "DELETE"
-              - "OPTIONS"
-            allowedHeaders: "*"
-            allowCredentials: true
-            exposedHeaders:
-              - "Authorization"
-      routes:
-        - id: video-service
-          uri: lb://VIDEO-SERVICE
-          predicates:
-            - Path=/api/videos/**
-        - id: comment-service
-          uri: lb://COMMENT-SERVICE
-          predicates:
-            - Path=/api/comments/**
-        - id: subscription-service
-          uri: lb://SUBSCRIPTION-SERVICE
-          predicates:
-            - Path=/api/subscriptions/**
-        - id: notification-service
-          uri: lb://NOTIFICATION-SERVICE
-          predicates:
-            - Path=/api/notifications/**
-        - id: recommendation-service
-          uri: http://localhost:8000
-          predicates:
-            - Path=/api/recommendations/**
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOriginPatterns:
+                  - "http://localhost:5173"
+                allowedMethods:
+                  - "GET"
+                  - "POST"
+                  - "PUT"
+                  - "DELETE"
+                  - "OPTIONS"
+                allowedHeaders: "*"
+                allowCredentials: true
+                exposedHeaders:
+                  - "Authorization"
+          routes:
+            - id: video-service
+              uri: lb://VIDEO-SERVICE
+              predicates:
+                - Path=/api/videos/**
+            - id: comment-service
+              uri: lb://COMMENT-SERVICE
+              predicates:
+                - Path=/api/comments/**
+            - id: subscription-service
+              uri: lb://SUBSCRIPTION-SERVICE
+              predicates:
+                - Path=/api/subscriptions/**
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/api/notifications/**
+            - id: recommendation-service
+              uri: http://localhost:8000
+              predicates:
+                - Path=/api/recommendations/**
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL}
+
   instance:
     prefer-ip-address: true
 
