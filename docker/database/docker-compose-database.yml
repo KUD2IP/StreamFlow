@@ -9,6 +9,19 @@ services:
       - redis_data:/data
     command: redis-server --appendonly yes
 
+  video_db:
+    image: postgres:17-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: video_db
+      POSTGRES_USER: video-user
+      POSTGRES_PASSWORD: video-password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
+  postgres_data:
   redis_data:
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="add-tag-1.0.0" author="kudzip">
+        <tagDatabase tag="v.1.0.0"/>
+    </changeSet>
+
+    <include file="00-create-users-table.xml" relativeToChangelogFile="true"/>
+    <include file="01-create-video-table.xml" relativeToChangelogFile="true"/>
+    <include file="02-create-video-metadata-table.xml" relativeToChangelogFile="true"/>
+    <include file="03-create-video-analytics-table.xml" relativeToChangelogFile="true"/>
+    <include file="04-create-video-tags-table.xml" relativeToChangelogFile="true"/>
+    <include file="05-create-categories-table.xml" relativeToChangelogFile="true"/>
+    <include file="06-add-foreign-keys.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

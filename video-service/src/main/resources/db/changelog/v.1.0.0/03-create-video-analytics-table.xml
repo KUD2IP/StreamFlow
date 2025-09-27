@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-video-analytics-table" author="kudzip">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="video"/>
+        </preConditions>
+
+        <createTable tableName="video_analytics">
+            <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="video_id" type="uuid">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="views_count" type="int8" defaultValue="0">
+                <constraints checkConstraint="views_count >= 0"/>
+            </column>
+            <column name="likes_count" type="int8" defaultValue="0">
+                <constraints checkConstraint="likes_count >= 0"/>
+            </column>
+            <column name="comment_count" type="int8" defaultValue="0">
+                <constraints checkConstraint="comment_count >= 0"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="video_analytics" indexName="idx_video_analytics_likes">
+            <column name="likes_count"/>
+        </createIndex>
+
+        <createIndex tableName="video_analytics" indexName="idx_video_analytics_views">
+            <column name="views_count"/>
+        </createIndex>
+
+        <addForeignKeyConstraint
+                baseTableName="video_analytics"
+                baseColumnNames="video_id"
+                constraintName="fk_video_analytics_video"
+                referencedTableName="video"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>
