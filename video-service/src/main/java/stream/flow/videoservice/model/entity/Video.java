@@ -57,9 +57,9 @@ public class Video extends BaseEntity {
 
     @ManyToMany
     @JoinTable(
-            name = "video_tag",
+            name = "video_tags",
             joinColumns = @JoinColumn(name = "video_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
+            inverseJoinColumns = @JoinColumn(name = "id")
     )
     private List<VideoTags> tags;
 }

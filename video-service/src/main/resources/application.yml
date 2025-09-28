@@ -12,11 +12,15 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URL}
+    connection-timeout: 10s
   
   security:
     oauth2:
@@ -28,7 +32,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL}
   instance:
     prefer-ip-address: true
 
@@ -48,6 +52,6 @@ minio:
 # File Upload Configuration
 file:
   upload:
-    max-size: 100000MB
+    max-size: 10000MB
     allowed-video-types: mp4,avi,mov,mkv,webm
     allowed-image-types: jpg,jpeg,png,gif,webp

@@ -15,6 +15,8 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+    networks:
+      - streamflow-network
 
   postgres:
     image: postgres:16-alpine
@@ -24,6 +26,12 @@ services:
       POSTGRES_PASSWORD: keycloak123
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - streamflow-network
 
 volumes:
   postgres_data:
+
+networks:
+  streamflow-network:
+    driver: bridge
