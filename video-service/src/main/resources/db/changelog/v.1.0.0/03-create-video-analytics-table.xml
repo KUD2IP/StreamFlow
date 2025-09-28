@@ -31,6 +31,7 @@
             <column name="updated_at" type="timestamptz" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
+            <column name="version" type="int8" defaultValue="0"/>
         </createTable>
 
         <createIndex tableName="video_analytics" indexName="idx_video_analytics_likes">
