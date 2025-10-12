@@ -111,3 +111,81 @@ body {
 .border-custom {
   border-color: var(--color-border);
 }
+
+/* Стили для модальных окон */
+.modal-overlay {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Анимации для модальных окон */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.modal-enter {
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal-content-enter {
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+/* Стили для форм в модальных окон */
+.auth-form-input {
+  transition: all 0.2s ease-in-out;
+}
+
+.auth-form-input:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.auth-button {
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.auth-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.auth-button:active {
+  transform: translateY(0);
+}
+
+/* Курсор для всех кнопок */
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Стили для ссылок в модальных окнах */
+.auth-link {
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.auth-link:hover {
+  color: var(--color-primary-hover);
+}

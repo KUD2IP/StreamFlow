@@ -25,10 +25,11 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests((authorize) -> authorize
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/api/v1/videos/public/**").permitAll()
-                .requestMatchers("/api/v1/videos/**").authenticated()
-                .anyRequest().authenticated()
+                    .requestMatchers("/actuator/**").permitAll()
+                    // Публичный доступ к просмотру видео
+                    .requestMatchers("/api/v1/videos/**").permitAll()
+                    // Остальные операции требуют аутентификации
+                    .anyRequest().authenticated()
             )
             .oauth2ResourceServer((oauth2) -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

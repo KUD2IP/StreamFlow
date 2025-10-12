@@ -12,3 +12,6 @@ node_modules/
 
 # System files
 .DS_Store
+
+/docker/database/logstash_data
+/docker/database/elasticsearch_data

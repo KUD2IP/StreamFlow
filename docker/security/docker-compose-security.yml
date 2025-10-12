@@ -13,6 +13,8 @@ services:
       KC_DB_PASSWORD: keycloak123
     ports:
       - "8080:8080"
+    volumes:
+      - ../../keycloak-theme/streamflow:/opt/keycloak/themes/streamflow
     depends_on:
       - postgres
     networks:

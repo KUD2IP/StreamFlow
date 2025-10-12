@@ -16,26 +16,11 @@ spring:
     gateway:
       server:
         webflux:
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOriginPatterns:
-                  - "http://localhost:5173"
-                allowedMethods:
-                  - "GET"
-                  - "POST"
-                  - "PUT"
-                  - "DELETE"
-                  - "OPTIONS"
-                allowedHeaders: "*"
-                allowCredentials: true
-                exposedHeaders:
-                  - "Authorization"
           routes:
             - id: video-service
               uri: lb://VIDEO-SERVICE
               predicates:
-                - Path=/api/videos/**
+                - Path=/api/v1/videos/**,/api/v1/users/**
             - id: comment-service
               uri: lb://COMMENT-SERVICE
               predicates:
@@ -43,7 +28,7 @@ spring:
             - id: subscription-service
               uri: lb://SUBSCRIPTION-SERVICE
               predicates:
-                - Path=/api/subscriptions/**
+                - Path=/api/v1/subscriptions/**
             - id: notification-service
               uri: lb://NOTIFICATION-SERVICE
               predicates:

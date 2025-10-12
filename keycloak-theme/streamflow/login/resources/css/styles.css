@@ -1,0 +1,458 @@
+/**
+ * Кастомные стили для форм аутентификации Keycloak
+ * Дизайн максимально приближен к модальному окну
+ */
+
+/* ===== Базовые стили ===== */
+:root {
+  --bg-dark: #0a0a0a;
+  --bg-surface: #141414;
+  --bg-surface-hover: #1f1f1f;
+  --border-color: #2a2a2a;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --error: #ef4444;
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --error-border: rgba(239, 68, 68, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Контейнер формы ===== */
+.login-pf-page {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--bg-dark);
+}
+
+#kc-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+#kc-container-wrapper {
+  width: 100%;
+}
+
+/* ===== Карточка формы ===== */
+#kc-form-wrapper,
+#kc-registration {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Заголовок ===== */
+#kc-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== Скрываем стандартный header Keycloak ===== */
+#kc-header {
+  display: none;
+}
+
+#kc-header-wrapper {
+  display: none;
+}
+
+/* ===== Форма ===== */
+#kc-form {
+  margin-top: 1.5rem;
+}
+
+#kc-form-login,
+#kc-register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ===== Группы полей ===== */
+.form-group {
+  margin-bottom: 0.75rem;
+}
+
+/* ===== Лейблы ===== */
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+/* ===== Поля ввода ===== */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+.form-control {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+.form-control:focus {
+  border-color: var(--primary);
+  ring: 2px;
+  ring-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder,
+input[type="email"]::placeholder,
+.form-control::placeholder {
+  color: var(--text-muted);
+}
+
+input[type="text"]:disabled,
+input[type="password"]:disabled,
+input[type="email"]:disabled,
+.form-control:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Чекбоксы ===== */
+input[type="checkbox"] {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--primary);
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:focus {
+  ring: 2px;
+  ring-color: var(--primary);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox label {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* ===== Кнопки ===== */
+button,
+.btn,
+input[type="submit"] {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background-color: var(--primary);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:hover,
+.btn:hover,
+input[type="submit"]:hover {
+  background-color: var(--primary-hover);
+}
+
+button:focus,
+.btn:focus,
+input[type="submit]:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+button:disabled,
+.btn:disabled,
+input[type="submit"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#kc-form-buttons {
+  margin-top: 1rem;
+}
+
+/* ===== Вторичная кнопка (например, "Назад") ===== */
+.btn-default,
+button[name="cancel"] {
+  background-color: var(--bg-surface-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-default:hover,
+button[name="cancel"]:hover {
+  background-color: var(--border-color);
+}
+
+/* ===== Сообщения об ошибках ===== */
+.alert {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.alert-error,
+.pf-m-danger {
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
+}
+
+.alert-warning {
+  background-color: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.alert-success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.alert-info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--primary);
+}
+
+#kc-content-wrapper .alert {
+  margin-bottom: 1rem;
+}
+
+/* ===== Ссылки ===== */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* ===== Разделитель ===== */
+.kc-social-section {
+  margin-top: 1.5rem;
+}
+
+.kc-social-section::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 1.5rem 0;
+}
+
+/* ===== Социальные провайдеры ===== */
+.kc-social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.kc-social-provider-logo {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.zocial,
+.kc-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background-color: var(--bg-surface-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.zocial:hover,
+.kc-social-link:hover {
+  background-color: var(--border-color);
+  text-decoration: none;
+}
+
+/* ===== Футер формы ===== */
+#kc-info {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+#kc-info-wrapper {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+#kc-registration {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+#kc-registration a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ===== Группы полей в две колонки (для регистрации) ===== */
+.pf-c-form__group-control {
+  width: 100%;
+}
+
+/* ===== Дополнительные настройки ===== */
+#kc-terms-text {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* ===== Адаптивность ===== */
+@media (max-width: 640px) {
+  #kc-container {
+    max-width: 100%;
+  }
+
+  #kc-form-wrapper,
+  #kc-registration {
+    padding: 1.5rem;
+  }
+
+  #kc-page-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* ===== Скрываем стандартные иконки Keycloak ===== */
+.fa,
+.pficon {
+  display: none;
+}
+
+/* ===== Анимации ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#kc-form-wrapper,
+#kc-registration {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== Улучшения для специфичных полей ===== */
+.pf-c-form__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.pf-c-form__label-required {
+  color: var(--error);
+}
+
+/* ===== Спиннеры/загрузка ===== */
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
