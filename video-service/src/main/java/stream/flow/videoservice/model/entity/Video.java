@@ -19,7 +19,7 @@ public class Video extends BaseEntity {
     @Column(name = "title", nullable = false, length = 500)
     private String title;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description")
     private String description;
 
     @Column(name = "visibility", nullable = false)
@@ -27,14 +27,8 @@ public class Video extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Visibility visibility = Visibility.PUBLIC;
 
-    @Column(name = "filename", length = 500)
-    private String filename;
-
-    @Column(name = "video_url")
-    private String videoUrl;
-
-    @Column(name = "preview_url")
-    private String previewUrl;
+    @Column(name = "thumbnail_path")
+    private String thumbnailPath;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -45,17 +39,17 @@ public class Video extends BaseEntity {
     @JoinColumn(name = "user_id")
     private Users user;
 
-    @OneToOne(mappedBy = "video", cascade = CascadeType.ALL)
-    private VideoMetadata metadata;
+    @OneToMany(mappedBy = "video", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<VideoQuality> qualities;
 
     @OneToOne(mappedBy = "video", cascade = CascadeType.ALL)
     private VideoAnalytics analytics;
 
     @ManyToMany
     @JoinTable(
-            name = "video_tags",
+            name = "video_tag",
             joinColumns = @JoinColumn(name = "video_id"),
-            inverseJoinColumns = @JoinColumn(name = "id")
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<VideoTags> tags;
+    private List<Tag> tags;
 }

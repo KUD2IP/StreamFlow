@@ -19,18 +19,10 @@ public class VideoResponse {
     private String title;
     private String description;
     private Visibility visibility;
-    private String filename;
-    private String videoUrl;
-    private String previewUrl;
     private Status status;
     
     private UserResponse user;
-    
-    private VideoMetadataResponse metadata;
-    private VideoAnalyticsResponse analytics;
-    
-    private List<TagResponse> tags;
-    
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

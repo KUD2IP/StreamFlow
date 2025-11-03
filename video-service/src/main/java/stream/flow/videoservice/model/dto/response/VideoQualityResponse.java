@@ -7,10 +7,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class VideoMetadataResponse {
+public class VideoQualityResponse {
 
     private Integer duration;
     private Long filesize;
-    private Long bitrate;
+    private Integer bitrateVideo;
+    private Integer bitrateAudio;
     private String resolution;
 }

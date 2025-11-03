@@ -1,22 +1,23 @@
 package stream.flow.videoservice.mapper;
 
 import org.springframework.stereotype.Component;
-import stream.flow.videoservice.model.dto.response.VideoMetadataResponse;
-import stream.flow.videoservice.model.entity.VideoMetadata;
+import stream.flow.videoservice.model.dto.response.VideoQualityResponse;
+import stream.flow.videoservice.model.entity.VideoQuality;
 
 @Component
 public class VideoMetadataMapper {
 
-    public VideoMetadataResponse toResponse(VideoMetadata metadata) {
-        if (metadata == null) {
+    public VideoQualityResponse toResponse(VideoQuality quality) {
+        if (quality == null) {
             return null;
         }
 
-        return VideoMetadataResponse.builder()
-                .duration(metadata.getDuration())
-                .filesize(metadata.getFilesize())
-                .bitrate(metadata.getBitrate())
-                .resolution(metadata.getResolution())
+        return VideoQualityResponse.builder()
+                .duration(quality.getDuration())
+                .filesize(quality.getFileSize())
+                .bitrateVideo(quality.getBitrateVideo())
+                .bitrateAudio(quality.getBitrateAudio())
+                .resolution(quality.getResolution())
                 .build();
     }
 }

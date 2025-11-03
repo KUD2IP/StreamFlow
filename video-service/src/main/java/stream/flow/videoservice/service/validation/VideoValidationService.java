@@ -42,9 +42,8 @@ public class VideoValidationService {
         }
 
         validateFileSize(file, maxFileSize);
-        
-        List<String> allowedTypes = Arrays.asList(allowedVideoTypes.split(","));
-        validateFileType(file, allowedTypes);
+
+        validateFileType(file);
         
         log.info("Video file validation passed: {}", file.getOriginalFilename());
     }
@@ -62,7 +61,7 @@ public class VideoValidationService {
         validateFileSize(file, maxImageSize);
         
         List<String> allowedTypes = Arrays.asList(allowedImageTypes.split(","));
-        validateFileType(file, allowedTypes);
+        validateFileType(file);
         
         log.info("Thumbnail file validation passed: {}", file.getOriginalFilename());
     }
@@ -83,7 +82,9 @@ public class VideoValidationService {
     /**
      * Валидирует тип файла по расширению
      */
-    public void validateFileType(MultipartFile file, List<String> allowedTypes) {
+    public void validateFileType(MultipartFile file) {
+        List<String> allowedTypes = Arrays.asList(allowedVideoTypes.split(","));
+
         String filename = file.getOriginalFilename();
         if (filename == null || filename.isEmpty()) {
             throw new InvalidFileTypeException("Filename is empty");

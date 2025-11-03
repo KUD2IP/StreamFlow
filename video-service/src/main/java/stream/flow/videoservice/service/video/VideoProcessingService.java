@@ -1,7 +1,7 @@
 package stream.flow.videoservice.service.video;
 
 import org.springframework.web.multipart.MultipartFile;
-import stream.flow.videoservice.model.entity.VideoMetadata;
+import stream.flow.videoservice.model.entity.VideoQuality;
 
 import java.util.UUID;
 
@@ -19,7 +19,7 @@ public interface VideoProcessingService {
     /**
      * Извлекает метаданные из видео файла
      */
-    VideoMetadata extractMetadata(MultipartFile videoFile, UUID videoId);
+    VideoQuality extractMetadata(MultipartFile videoFile, UUID videoId);
 
     /**
      * Генерирует превью для видео (если не загружено вручную)

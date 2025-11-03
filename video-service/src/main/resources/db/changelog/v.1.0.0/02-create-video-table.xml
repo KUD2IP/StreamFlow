@@ -5,6 +5,10 @@
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="create-video-table" author="kudzip">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="users"/>
+        </preConditions>
+
         <createTable tableName="video">
             <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
                 <constraints nullable="false" primaryKey="true"/>
@@ -13,23 +17,16 @@
                 <constraints nullable="false"/>
             </column>
             <column name="description" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="visibility" type="varchar(50)" defaultValue="PUBLIC">
                 <constraints nullable="false"/>
             </column>
-            <column name="visibility" type="varchar(15)" defaultValue="PUBLIC"/>
-            <column name="filename" type="varchar(500)">
-                <constraints nullable="true"/>
-            </column>
-            <column name="video_url" type="text">
-                <constraints nullable="true"/>
-            </column>
-            <column name="preview_url" type="text">
+            <column name="thumbnail_path" type="varchar(1000)">
                 <constraints nullable="true"/>
             </column>
             <column name="user_id" type="uuid">
                 <constraints nullable="false"/>
-            </column>
-            <column name="category_id" type="uuid">
-                <constraints nullable="true"/>
             </column>
             <column name="status" type="varchar(50)" defaultValue="UPLOADING">
                 <constraints nullable="false"/>
@@ -47,8 +44,12 @@
             <column name="user_id"/>
         </createIndex>
 
-        <createIndex tableName="video" indexName="idx_video_category_id">
-            <column name="category_id"/>
+        <createIndex tableName="video" indexName="idx_video_status">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex tableName="video" indexName="idx_video_visibility">
+            <column name="visibility"/>
         </createIndex>
 
         <createIndex tableName="video" indexName="idx_video_created_at">
@@ -59,10 +60,14 @@
             <column name="title"/>
         </createIndex>
 
-        <createIndex tableName="video" indexName="idx_video_visibility">
-            <column name="visibility"/>
-        </createIndex>
+        <addForeignKeyConstraint
+                baseTableName="video"
+                baseColumnNames="user_id"
+                constraintName="fk_video_user"
+                referencedTableName="users"
+                referencedColumnNames="id"/>
 
+        <!-- Check constraints for ENUM-like validation -->
         <sql>
             ALTER TABLE video ADD CONSTRAINT chk_video_status
             CHECK (status IN ('UPLOADING', 'PROCESSING', 'READY', 'FAILED'));
@@ -72,5 +77,5 @@
             CHECK (visibility IN ('PUBLIC', 'PRIVATE', 'SUBSCRIBERS'));
         </sql>
     </changeSet>
-
 </databaseChangeLog>
+

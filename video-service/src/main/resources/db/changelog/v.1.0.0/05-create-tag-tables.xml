@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-tag-tables" author="kudzip">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="video"/>
+        </preConditions>
+
+        <!-- Main tag table -->
+        <createTable tableName="tag">
+            <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="int8" defaultValue="0"/>
+        </createTable>
+
+        <createIndex tableName="tag" indexName="idx_tag_name">
+            <column name="name"/>
+        </createIndex>
+
+        <!-- Junction table for video_tag many-to-many -->
+        <createTable tableName="video_tag">
+            <column name="video_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="video_tag"
+                       columnNames="video_id, tag_id"
+                       constraintName="pk_video_tag"/>
+
+        <createIndex tableName="video_tag" indexName="idx_video_tag_video_id">
+            <column name="video_id"/>
+        </createIndex>
+
+        <createIndex tableName="video_tag" indexName="idx_video_tag_tag_id">
+            <column name="tag_id"/>
+        </createIndex>
+
+        <addForeignKeyConstraint
+                baseTableName="video_tag"
+                baseColumnNames="video_id"
+                constraintName="fk_video_tag_video"
+                referencedTableName="video"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="video_tag"
+                baseColumnNames="tag_id"
+                constraintName="fk_video_tag_tag"
+                referencedTableName="tag"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>
+

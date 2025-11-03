@@ -28,7 +28,7 @@ public class SecurityConfig {
                     .requestMatchers("/actuator/**").permitAll()
                     // Публичный доступ к просмотру видео
                     .requestMatchers("/api/v1/videos", "/api/v1/videos/search/**", "/api/v1/videos/category/**").permitAll()
-                    .requestMatchers("/api/v1/videos/{id}").permitAll() // GET запросы к конкретному видео
+                    .requestMatchers("/api/v1/videos/**").permitAll() // GET запросы к конкретному видео
                     // Публичный доступ к категориям и тегам
                     .requestMatchers("/api/v1/categories/**", "/api/v1/tags/**").permitAll()
                     // Остальные операции требуют аутентификации

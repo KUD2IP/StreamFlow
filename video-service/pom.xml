@@ -65,7 +65,8 @@
             <artifactId>minio</artifactId>
             <version>8.5.17</version>
         </dependency>
-        
+
+
         <!-- OAuth2 Resource Server -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -76,6 +77,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/net.bramp.ffmpeg/ffmpeg -->
+        <dependency>
+            <groupId>net.bramp.ffmpeg</groupId>
+            <artifactId>ffmpeg</artifactId>
+            <version>0.8.0</version>
         </dependency>
         
         <!-- Web -->

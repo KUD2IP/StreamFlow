@@ -22,8 +22,8 @@
             <column name="likes_count" type="int8" defaultValue="0">
                 <constraints checkConstraint="likes_count >= 0"/>
             </column>
-            <column name="comment_count" type="int8" defaultValue="0">
-                <constraints checkConstraint="comment_count >= 0"/>
+            <column name="comments_count" type="int8" defaultValue="0">
+                <constraints checkConstraint="comments_count >= 0"/>
             </column>
             <column name="created_at" type="timestamptz" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>

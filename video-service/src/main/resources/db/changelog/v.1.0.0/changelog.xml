@@ -9,10 +9,10 @@
     </changeSet>
 
     <include file="00-create-users-table.xml" relativeToChangelogFile="true"/>
-    <include file="01-create-video-table.xml" relativeToChangelogFile="true"/>
-    <include file="02-create-video-metadata-table.xml" relativeToChangelogFile="true"/>
-    <include file="03-create-video-analytics-table.xml" relativeToChangelogFile="true"/>
-    <include file="06-create-video-tags-table.xml" relativeToChangelogFile="true"/>
-    <include file="05-add-foreign-keys.xml" relativeToChangelogFile="true"/>
+    <include file="01-create-enums.xml" relativeToChangelogFile="true"/>
+    <include file="02-create-video-table.xml" relativeToChangelogFile="true"/>
+    <include file="03-create-video-quality-table.xml" relativeToChangelogFile="true"/>
+    <include file="04-create-video-analytics-table.xml" relativeToChangelogFile="true"/>
+    <include file="05-create-tag-tables.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -2,10 +2,11 @@ package stream.flow.videoservice.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import stream.flow.videoservice.model.entity.VideoTags;
+import stream.flow.videoservice.model.entity.Tag;
 
 import java.util.UUID;
 
 @Repository
-public interface VideoTagsRepository extends JpaRepository<VideoTags, UUID> {
+public interface TagRepository extends JpaRepository<Tag, UUID> {
 }
+

@@ -6,17 +6,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stream.flow.videoservice.exception.user.UserNotFoundException;
 import stream.flow.videoservice.mapper.VideoMapper;
+import stream.flow.videoservice.model.dto.request.VideoCreateFrameRequest;
 import stream.flow.videoservice.model.dto.request.VideoCreateRequest;
+import stream.flow.videoservice.model.dto.response.VideoFrameResponse;
 import stream.flow.videoservice.model.dto.response.VideoResponse;
+import stream.flow.videoservice.model.entity.Tag;
 import stream.flow.videoservice.model.entity.Users;
 import stream.flow.videoservice.model.entity.Video;
 import stream.flow.videoservice.model.entity.VideoAnalytics;
-import stream.flow.videoservice.model.entity.VideoTags;
 import stream.flow.videoservice.model.enums.Status;
+import stream.flow.videoservice.repository.TagRepository;
 import stream.flow.videoservice.repository.UsersRepository;
 import stream.flow.videoservice.repository.VideoAnalyticsRepository;
 import stream.flow.videoservice.repository.VideoRepository;
-import stream.flow.videoservice.repository.VideoTagsRepository;
 import stream.flow.videoservice.service.video.VideoService;
 import stream.flow.videoservice.service.validation.VideoValidationService;
 
@@ -26,15 +28,29 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class VideoServiceImpl implements VideoService {
 
     private final VideoRepository videoRepository;
     private final UsersRepository usersRepository;
-    private final VideoTagsRepository videoTagsRepository;
+    private final TagRepository tagRepository;
     private final VideoAnalyticsRepository videoAnalyticsRepository;
     private final VideoMapper videoMapper;
     private final VideoValidationService validationService;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public VideoFrameResponse createVideoFrame(VideoCreateFrameRequest request) {
+        log.info("Create video frame request: {}", request);
+
+        Users user = usersRepository.findByKeycloakId(request.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
+
+        Video video = videoMapper.toEntity(request);
+        video.setUser(user);
+
+        log.info("Create video frame successful: {}", video);
+        return videoMapper.toFrameResponse(videoRepository.save(video));
+    }
 
     @Override
     @Transactional
@@ -51,7 +67,7 @@ public class VideoServiceImpl implements VideoService {
 
         // Устанавливаем теги если есть
         if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
-            List<VideoTags> tags = videoTagsRepository.findAllById(request.getTagIds());
+            List<Tag> tags = tagRepository.findAllById(request.getTagIds());
             video.setTags(tags);
         }
 
@@ -63,7 +79,7 @@ public class VideoServiceImpl implements VideoService {
                 .video(savedVideo)
                 .viewsCount(0L)
                 .likesCount(0L)
-                .commentCount(0L)
+                .commentsCount(0L)
                 .build();
         videoAnalyticsRepository.save(analytics);
 
@@ -81,41 +97,6 @@ public class VideoServiceImpl implements VideoService {
         videoRepository.save(video);
 
         log.info("Video status updated: {}", videoId);
-    }
-
-    @Override
-    @Transactional
-    public void updateVideoUrls(UUID videoId, String videoUrl, String previewUrl) {
-        log.info("Updating video URLs for: {}", videoId);
-
-        Video video = validationService.validateVideoExists(videoId);
-        
-        if (videoUrl != null) {
-            video.setVideoUrl(videoUrl);
-        }
-        if (previewUrl != null) {
-            video.setPreviewUrl(previewUrl);
-        }
-
-        videoRepository.save(video);
-        log.info("Video URLs updated: {}", videoId);
-    }
-
-    @Override
-    public boolean videoExists(UUID videoId) {
-        return videoRepository.existsById(videoId);
-    }
-
-    @Override
-    @Transactional
-    public void updateVideoFilename(UUID videoId, String filename) {
-        log.info("Updating video filename for: {}", videoId);
-
-        Video video = validationService.validateVideoExists(videoId);
-        video.setFilename(filename);
-        videoRepository.save(video);
-
-        log.info("Video filename updated: {}", videoId);
     }
 }
 

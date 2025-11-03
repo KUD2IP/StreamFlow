@@ -15,7 +15,7 @@ public class VideoAnalyticsMapper {
         return VideoAnalyticsResponse.builder()
                 .viewsCount(analytics.getViewsCount())
                 .likesCount(analytics.getLikesCount())
-                .commentCount(analytics.getCommentCount())
+                .commentCount(analytics.getCommentsCount())
                 .build();
     }
 }

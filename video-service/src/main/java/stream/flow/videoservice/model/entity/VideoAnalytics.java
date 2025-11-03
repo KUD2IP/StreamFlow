@@ -20,9 +20,9 @@ public class VideoAnalytics extends BaseEntity {
     @Builder.Default
     private Long likesCount = 0L;
 
-    @Column(name = "comment_count")
+    @Column(name = "comments_count")
     @Builder.Default
-    private Long commentCount = 0L;
+    private Long commentsCount = 0L;
 
     @OneToOne
     @JoinColumn(name = "video_id")
