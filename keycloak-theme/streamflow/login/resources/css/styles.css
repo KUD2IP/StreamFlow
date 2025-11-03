@@ -215,13 +215,6 @@ input[type="submit"]:hover {
   background-color: var(--primary-hover);
 }
 
-button:focus,
-.btn:focus,
-input[type="submit]:focus {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
 button:disabled,
 .btn:disabled,
 input[type="submit"]:disabled {

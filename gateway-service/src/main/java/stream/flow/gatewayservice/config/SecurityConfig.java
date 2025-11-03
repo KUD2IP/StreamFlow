@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .pathMatchers("/api/videos/public/**").permitAll()
                 .pathMatchers("/api/recommendations/public/**").permitAll()
                 .pathMatchers("/api/v1/videos/**").authenticated()
+                    .pathMatchers("/api/v1/categories/**").permitAll()
                 .pathMatchers("/api/v1/users/**").authenticated()
                 .anyExchange().authenticated()
             )

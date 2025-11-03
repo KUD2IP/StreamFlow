@@ -4,12 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import stream.flow.videoservice.model.entity.Users;
-import stream.flow.videoservice.service.UserSyncService;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import stream.flow.videoservice.model.dto.response.UserResponse;
+import stream.flow.videoservice.service.user.UserService;
 
 @Slf4j
 @RestController
@@ -17,28 +16,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserSyncService userSyncService;
+    private final UserService userService;
 
     /**
      * Синхронизирует текущего пользователя из Keycloak
      * Вызывается фронтендом автоматически после входа в Keycloak
      */
     @PostMapping("/sync")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Map<String, Object>> syncCurrentUser() {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserResponse> syncCurrentUser() {
         log.info("Syncing current user from Keycloak");
         
-        Users user = userSyncService.syncCurrentUser();
-        if (user == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Failed to sync user"));
-        }
+        UserResponse userResponse = userService.getCurrentUser();
 
-        Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("id", user.getId());
-        userInfo.put("username", user.getUsername());
-        userInfo.put("synced", true);
-
-        log.info("Successfully synced user: {}", user.getUsername());
-        return ResponseEntity.ok(userInfo);
+        log.info("Successfully synced user: {}", userResponse.getUsername());
+        return ResponseEntity.ok(userResponse);
     }
 }

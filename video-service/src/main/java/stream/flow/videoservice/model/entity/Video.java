@@ -27,13 +27,13 @@ public class Video extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Visibility visibility = Visibility.PUBLIC;
 
-    @Column(name = "filename", nullable = false, length = 500)
+    @Column(name = "filename", length = 500)
     private String filename;
 
-    @Column(name = "video_url", nullable = false)
+    @Column(name = "video_url")
     private String videoUrl;
 
-    @Column(name = "preview_url", nullable = false)
+    @Column(name = "preview_url")
     private String previewUrl;
 
     @Column(name = "status", nullable = false)
@@ -44,10 +44,6 @@ public class Video extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Users user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Categories category;
 
     @OneToOne(mappedBy = "video", cascade = CascadeType.ALL)
     private VideoMetadata metadata;

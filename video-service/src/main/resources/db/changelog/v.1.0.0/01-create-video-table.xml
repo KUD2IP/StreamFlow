@@ -17,13 +17,13 @@
             </column>
             <column name="visibility" type="varchar(15)" defaultValue="PUBLIC"/>
             <column name="filename" type="varchar(500)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="video_url" type="text">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="preview_url" type="text">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="user_id" type="uuid">
                 <constraints nullable="false"/>

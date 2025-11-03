@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import Keycloak from 'keycloak-js';
 import { keycloakConfig } from '~/config/keycloak';
+import { syncUser, type SyncResponse } from '~/services/userApi';
 
 /**
  * Интерфейс пользователя
@@ -13,6 +14,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   roles: string[];
+  synced?: boolean; // Флаг синхронизации с сервером
 }
 
 /**
@@ -25,12 +27,19 @@ interface AuthContextType {
   user: User | null;
   
   // Методы аутентификации
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
+  login: () => void;
+  logout: () => void;
+  register: () => void;
+  
+  // Синхронизация пользователя
+  syncUser: () => Promise<boolean>;
   
   // Информация о токене
   token: string | null;
   refreshToken: () => Promise<boolean>;
+  
+  // Keycloak instance
+  keycloak: Keycloak | null;
 }
 
 /**
@@ -69,31 +78,71 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const initKeycloak = async () => {
       try {
-        const kc = new Keycloak(keycloakConfig);
-        
-        // Инициализация Keycloak
-        const authenticated = await kc.init(keycloakConfig.initOptions);
-        
-        setKeycloak(kc);
+        // Создаем экземпляр Keycloak
+        const keycloakInstance = new Keycloak({
+          url: keycloakConfig.url,
+          realm: keycloakConfig.realm,
+          clientId: keycloakConfig.clientId,
+        });
+
+        // Инициализируем Keycloak
+        const authenticated = await keycloakInstance.init(keycloakConfig.initOptions);
+
+        setKeycloak(keycloakInstance);
         setIsAuthenticated(authenticated);
-        
-        if (authenticated) {
-          // Пользователь аутентифицирован
-          const userInfo = await kc.loadUserInfo();
-          setUser({
-            id: kc.subject || '',
-            username: kc.tokenParsed?.preferred_username || '',
-            email: kc.tokenParsed?.email || '',
-            firstName: kc.tokenParsed?.given_name || '',
-            lastName: kc.tokenParsed?.family_name || '',
-            roles: kc.tokenParsed?.realm_access?.roles || [],
-          });
-          setToken(kc.token || null);
+
+        if (authenticated && keycloakInstance.token) {
+          setToken(keycloakInstance.token);
+          
+          // Получаем информацию о пользователе
+          await keycloakInstance.loadUserProfile();
+          const profile = keycloakInstance.profile;
+          
+          if (profile) {
+            const userData = {
+              id: keycloakInstance.subject || '',
+              username: profile.username || '',
+              email: profile.email,
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              roles: keycloakInstance.realmAccess?.roles || [],
+              synced: false, // Пока не синхронизирован
+            };
+            
+            setUser(userData);
+            
+            // Автоматическая синхронизация с сервером
+            try {
+              const syncedUser = await syncUser(keycloakInstance.token);
+              
+              if (syncedUser) {
+                setUser({
+                  ...userData,
+                  id: syncedUser.id,
+                  synced: true,
+                });
+              }
+            } catch (error) {
+              // Не прерываем аутентификацию из-за ошибки синхронизации
+            }
+          }
         }
-        
+
+        // Настраиваем автоматическое обновление токена
+        if (authenticated) {
+          setInterval(() => {
+            keycloakInstance.updateToken(70).then((refreshed) => {
+              if (refreshed && keycloakInstance.token) {
+                setToken(keycloakInstance.token);
+              }
+            }).catch(() => {
+              setIsAuthenticated(false);
+            });
+          }, 60000); // Проверка каждую минуту
+        }
+
         setIsLoading(false);
       } catch (error) {
-        console.error('Ошибка инициализации Keycloak:', error);
         setIsLoading(false);
       }
     };
@@ -104,65 +153,70 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Вход в систему
    */
-  const login = async (): Promise<void> => {
-    if (keycloak) {
-      try {
-        await keycloak.login();
-      } catch (error) {
-        console.error('Ошибка входа:', error);
-      }
-    }
+  const login = () => {
+    keycloak?.login(keycloakConfig.loginOptions);
+  };
+
+  /**
+   * Регистрация
+   */
+  const register = () => {
+    keycloak?.register();
   };
 
   /**
    * Выход из системы
    */
-  const logout = async (): Promise<void> => {
-    if (keycloak) {
-      try {
-        await keycloak.logout();
-      } catch (error) {
-        console.error('Ошибка выхода:', error);
-      }
-    }
+  const logout = () => {
+    keycloak?.logout();
   };
 
   /**
    * Обновление токена
    */
   const refreshToken = async (): Promise<boolean> => {
-    if (keycloak) {
-      try {
-        const refreshed = await keycloak.updateToken(30);
-        if (refreshed) {
-          setToken(keycloak.token || null);
-        }
-        return refreshed;
-      } catch (error) {
-        console.error('Ошибка обновления токена:', error);
-        return false;
+    if (!keycloak) return false;
+    
+    try {
+      const refreshed = await keycloak.updateToken(30);
+      if (refreshed && keycloak.token) {
+        setToken(keycloak.token);
       }
+      return refreshed;
+    } catch (error) {
+      return false;
     }
-    return false;
   };
 
   /**
-   * Автоматическое обновление токена
+   * Синхронизация пользователя с сервером
    */
-  useEffect(() => {
-    if (keycloak && isAuthenticated) {
-      const interval = setInterval(async () => {
-        try {
-          await keycloak.updateToken(15);
-          setToken(keycloak.token || null);
-        } catch (error) {
-          console.error('Ошибка автоматического обновления токена:', error);
-        }
-      }, 30000); // Обновление каждые 30 секунд
-
-      return () => clearInterval(interval);
+  const syncUserWithServer = async (): Promise<boolean> => {
+    if (!keycloak || !keycloak.token) {
+      return false;
     }
-  }, [keycloak, isAuthenticated]);
+
+    try {
+      const syncedUser = await syncUser(keycloak.token);
+      
+      if (syncedUser) {
+        setUser(prevUser => {
+          if (!prevUser) return null;
+          return {
+            ...prevUser,
+            id: syncedUser.id,
+            synced: true,
+          };
+        });
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      return false;
+    }
+  };
 
   /**
    * Значение контекста
@@ -173,8 +227,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     login,
     logout,
+    register,
+    syncUser: syncUserWithServer,
     token,
     refreshToken,
+    keycloak,
   };
 
   return (

@@ -7,7 +7,6 @@
     <changeSet id="add-foreign-keys" author="kudzip">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="users"/>
-            <tableExists tableName="categories"/>
         </preConditions>
 
         <addForeignKeyConstraint
@@ -15,13 +14,6 @@
                 baseColumnNames="user_id"
                 constraintName="fk_video_user"
                 referencedTableName="users"
-                referencedColumnNames="id"/>
-
-        <addForeignKeyConstraint
-                baseTableName="video"
-                baseColumnNames="category_id"
-                constraintName="fk_video_category"
-                referencedTableName="categories"
                 referencedColumnNames="id"/>
     </changeSet>
 </databaseChangeLog>

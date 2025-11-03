@@ -1,4 +1,5 @@
-import {AuthButton} from "./AuthButton";
+import { AuthButton } from "./AuthButton";
+import { useCreateVideoModal } from "~/contexts/CreateVideoModalContext";
 
 /**
  * Пропсы для компонента Header
@@ -13,6 +14,7 @@ interface HeaderProps {
  * Содержит: логотип, поиск, кнопки управления
  */
 export function Header({ isSidebarCompact, onToggleSidebar }: HeaderProps) {
+  const { openModal } = useCreateVideoModal();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-surface/60 backdrop-blur-md">
@@ -63,9 +65,13 @@ export function Header({ isSidebarCompact, onToggleSidebar }: HeaderProps) {
 
         {/* Правая часть - действия пользователя */}
         <div className="flex items-center gap-1 sm:gap-4">
-          {/* Кнопка создания контента - скрыта на мобильных */}
-          <button className="sm:block p-2 rounded-lg hover:bg-surface-hover transition-colors">
-            <svg className="h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Кнопка создания контента */}
+          <button 
+            onClick={openModal}
+            className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
+            title="Создать видео"
+          >
+            <svg className="h-4 w-4 sm:h-5 sm:w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>

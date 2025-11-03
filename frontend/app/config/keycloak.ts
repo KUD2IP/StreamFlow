@@ -40,6 +40,12 @@ export const keycloakConfig = {
     // Интервал автоматического обновления (в секундах)
     autoRefreshInterval: 30,
   },
+  
+  // Настройки входа
+  loginOptions: {
+    // Принудительно показывать выбор аккаунта при входе
+    prompt: 'select_account' as const,
+  },
 };
 
 /**

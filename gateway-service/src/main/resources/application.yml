@@ -20,7 +20,7 @@ spring:
             - id: video-service
               uri: lb://VIDEO-SERVICE
               predicates:
-                - Path=/api/v1/videos/**,/api/v1/users/**
+                - Path=/api/v1/videos/**,/api/v1/users/**,/api/v1/categories
             - id: comment-service
               uri: lb://COMMENT-SERVICE
               predicates:

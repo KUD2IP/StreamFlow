@@ -1,7 +1,9 @@
 import { Sidebar } from "../heaader/Sidebar";
 import { MainContent } from "../content/MainContent";
 import { Header } from "../heaader/Header";
+import { CreateVideoModal } from "../content/CreateVideoModal";
 import { useSidebar } from "~/contexts/SidebarContext";
+import { useCreateVideoModal } from "~/contexts/CreateVideoModalContext";
 import type { Video } from "~/types/video";
 
 /**
@@ -22,6 +24,9 @@ export function Layout({ onVideoClick }: LayoutProps) {
     isSidebarOpen, 
     toggleSidebar 
   } = useSidebar();
+
+  // Используем контекст модального окна
+  const { isOpen: isCreateVideoModalOpen, closeModal: closeCreateVideoModal } = useCreateVideoModal();
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,6 +68,12 @@ export function Layout({ onVideoClick }: LayoutProps) {
           />
         </div>
       </div>
+
+      {/* Модальное окно создания видео */}
+      <CreateVideoModal 
+        isOpen={isCreateVideoModalOpen}
+        onClose={closeCreateVideoModal}
+      />
     </div>
   );
 }

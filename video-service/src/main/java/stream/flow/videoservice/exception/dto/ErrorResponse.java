@@ -1,0 +1,22 @@
+package stream.flow.videoservice.exception.dto;
+
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ErrorResponse {
+
+    private LocalDateTime timestamp;
+    private Integer status;
+    private String error;
+    private String message;
+    private String path;
+}
+
+
+

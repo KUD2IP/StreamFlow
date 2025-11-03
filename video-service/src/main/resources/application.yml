@@ -8,12 +8,13 @@ spring:
     password: ${PG_PASSWORD}
 
   liquibase:
-    enabled: false
+    enabled: true
+    change-log: classpath:db/changelog/v.1.0.0/changelog.xml
 
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -28,6 +29,13 @@ spring:
         jwt:
           issuer-uri: ${ISSUER_URL}
           jwk-set-uri: ${JWT_SET_URL}
+
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 10GB
+      file-size-threshold: 1MB
+      enabled: true
 
 eureka:
   client:

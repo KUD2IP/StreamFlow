@@ -11,6 +11,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SidebarProvider } from "./contexts/SidebarContext";
+import { CreateVideoModalProvider } from "./contexts/CreateVideoModalContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -47,7 +48,9 @@ export default function App() {
   return (
     <AuthProvider>
       <SidebarProvider>
-        <Outlet />
+        <CreateVideoModalProvider>
+          <Outlet />
+        </CreateVideoModalProvider>
       </SidebarProvider>
     </AuthProvider>
   );
