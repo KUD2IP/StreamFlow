@@ -32,13 +32,13 @@ public class VideoController {
      * Создание нового видео (только метаданные)
      * POST /api/v1/videos
      */
-    @PostMapping
-//    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<VideoResponse> createVideo(@Valid @RequestBody VideoCreateRequest request, @RequestParam UUID id) {
+    @PostMapping("/{videoId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<VideoResponse> createVideo(@Valid @RequestBody VideoCreateRequest request, @PathVariable UUID videoId) {
         log.info("Creating video with title: {}", request.getTitle());
-        
-//        String userId = SecurityUtils.getCurrentUserId();
-        VideoResponse response = videoService.createVideo(request, id.toString());
+
+        String userId = SecurityUtils.getCurrentUserId();
+        VideoResponse response = videoService.createVideo(request, userId, videoId);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -48,7 +48,7 @@ public class VideoController {
      * POST /api/v1/videos/upload/{id}
      */
     @PostMapping(value = "/uploads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<VideoUploadResponse> uploadVideo(
             @RequestParam("file") MultipartFile file) throws IOException {
 
@@ -65,7 +65,7 @@ public class VideoController {
      * POST /api/v1/videos/{id}/thumbnail
      */
     @PostMapping(value = "/{id}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<VideoUploadResponse> uploadThumbnail(
             @PathVariable UUID id,
             @RequestParam("file") MultipartFile file) {

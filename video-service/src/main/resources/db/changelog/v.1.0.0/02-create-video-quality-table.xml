@@ -69,7 +69,7 @@
         <!-- Check constraint for quality_level -->
         <sql>
             ALTER TABLE video_quality ADD CONSTRAINT chk_video_quality_level
-            CHECK (quality_level IN ('ORIGINAL', 'P1080', 'P720', 'P480', 'P360', 'P240'));
+            CHECK (quality_level IN ('P1080', 'P720', 'P480', 'P360', 'P240'));
         </sql>
     </changeSet>
 </databaseChangeLog>

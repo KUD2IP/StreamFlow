@@ -1,4 +1,4 @@
-import type { Video, CreateVideoRequest, CreateVideoResponse } from '~/types/video';
+import type { Video, CreateVideoRequest, CreateVideoResponse, VideoUploadResponse } from '~/types/video';
 
 // Базовый URL для API (можно настроить через переменные окружения)
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -33,11 +33,15 @@ const createFileHeaders = (token?: string): HeadersInit => {
 const handleApiError = async (response: Response): Promise<never> => {
   let errorMessage = 'Произошла ошибка при выполнении запроса';
   
+  console.error('API Error - Status:', response.status, response.statusText);
+  
   try {
     const errorData = await response.json();
+    console.error('API Error - Body:', errorData);
     errorMessage = errorData.message || errorData.error || errorMessage;
   } catch {
     // Если не удалось распарсить JSON, используем стандартное сообщение
+    console.error('API Error - Could not parse JSON response');
     errorMessage = `HTTP ${response.status}: ${response.statusText}`;
   }
   
@@ -51,6 +55,39 @@ export const videoApi = {
       method: 'POST',
       headers: createHeaders(token),
       body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      await handleApiError(response);
+    }
+
+    return response.json();
+  },
+
+  // Обновление данных видео после загрузки файла
+  async updateVideoMetadata(videoId: string, data: CreateVideoRequest, token?: string): Promise<CreateVideoResponse> {
+    const response = await fetch(`${API_BASE_URL}/videos/${videoId}`, {
+      method: 'POST',
+      headers: createHeaders(token),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      await handleApiError(response);
+    }
+
+    return response.json();
+  },
+
+  // Загрузка видео файла (тестовый эндпоинт /uploads)
+  async testUploadVideo(file: File, token?: string): Promise<VideoUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/videos/uploads`, {
+      method: 'POST',
+      headers: createFileHeaders(token),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -81,7 +118,7 @@ export const videoApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_BASE_URL}/videos/upload/${videoId}/thumbnail`, {
+    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/thumbnail`, {
       method: 'POST',
       headers: createFileHeaders(token),
       body: formData,

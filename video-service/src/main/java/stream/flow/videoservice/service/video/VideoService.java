@@ -18,7 +18,7 @@ public interface VideoService {
     /**
      * Создает новое видео (только метаданные, без файла)
      */
-    VideoResponse createVideo(VideoCreateRequest request, String userId);
+    VideoResponse createVideo(VideoCreateRequest request, String userId, UUID videoId);
 
     /**
      * Обновляет статус видео (используется при обработке)

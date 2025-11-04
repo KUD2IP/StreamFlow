@@ -7,5 +7,5 @@ import stream.flow.videoservice.model.entity.VideoQuality;
 import java.util.UUID;
 
 @Repository
-public interface VideoMetadataRepository extends JpaRepository<VideoQuality, UUID>{
+public interface VideoQualityRepository extends JpaRepository<VideoQuality, UUID>{
 }

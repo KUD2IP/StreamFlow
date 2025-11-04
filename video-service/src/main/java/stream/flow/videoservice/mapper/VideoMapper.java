@@ -14,9 +14,6 @@ import stream.flow.videoservice.model.enums.Status;
 public class VideoMapper {
 
     private final UserMapper userMapper;
-    private final TagMapper tagMapper;
-    private final VideoMetadataMapper videoMetadataMapper;
-    private final VideoAnalyticsMapper videoAnalyticsMapper;
 
     public Video toEntity(VideoCreateRequest request) {
         if (request == null) {

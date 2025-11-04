@@ -5,21 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import stream.flow.videoservice.exception.user.UserNotFoundException;
 import stream.flow.videoservice.model.dto.request.VideoCreateFrameRequest;
 import stream.flow.videoservice.model.dto.response.VideoFrameResponse;
-import stream.flow.videoservice.model.dto.response.VideoResponse;
 import stream.flow.videoservice.model.dto.response.VideoUploadResponse;
-import stream.flow.videoservice.model.entity.Users;
-import stream.flow.videoservice.model.entity.Video;
 import stream.flow.videoservice.model.enums.Status;
 import stream.flow.videoservice.model.enums.Visibility;
-import stream.flow.videoservice.repository.UsersRepository;
-import stream.flow.videoservice.service.video.VideoProcessingService;
+import stream.flow.videoservice.service.video.AsyncProcessVideoService;
 import stream.flow.videoservice.service.video.VideoUploadService;
 import stream.flow.videoservice.service.video.VideoService;
-import stream.flow.videoservice.service.storage.StorageService;
-import stream.flow.videoservice.service.validation.FileUtilService;
+import stream.flow.videoservice.service.file.FileService;
 import stream.flow.videoservice.service.validation.VideoValidationService;
 
 import java.io.*;
@@ -33,12 +27,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class VideoUploadServiceImpl implements VideoUploadService {
 
-    private final StorageService storageService;
-    private final UsersRepository usersRepository;
     private final VideoService videoService;
     private final VideoValidationService validationService;
-    private final FileUtilService fileUtilService;
-    private final VideoProcessingService processingService;
+    private final FileService fileService;
+    private final AsyncProcessVideoService asyncProcessVideoService;
 
     @Value("${minio.bucket.videos:streamflow-videos}")
     private String videoBucket;
@@ -46,12 +38,14 @@ public class VideoUploadServiceImpl implements VideoUploadService {
     @Value("${minio.bucket.thumbnails:streamflow-thumbnails}")
     private String thumbnailBucket;
 
-    @Value("${video.temp-dir:/tmp}")
+    @Value("${video.temp-dir}")
     private String tempDir;
 
     @Override
     public VideoUploadResponse uploadVideo(MultipartFile videoFile, String userId) throws IOException {
         log.info("Starting video upload, user: {}", userId);
+
+        validationService.validateVideoFile(videoFile);
 
         VideoFrameResponse video = videoService.createVideoFrame(VideoCreateFrameRequest.builder()
                 .title(videoFile.getOriginalFilename())
@@ -60,9 +54,9 @@ public class VideoUploadServiceImpl implements VideoUploadService {
                 .userId(userId)
                 .build());
 
-        validationService.validateVideoFile(videoFile);
+        String pathOriginal = saveOriginal(videoFile, video.getVideoId());
 
-        saveOriginal(videoFile, video.getVideoId());
+        asyncProcessVideoService.processingAsync(pathOriginal, video.getVideoId());
 
         return VideoUploadResponse.builder()
                 .videoId(video.getVideoId())
@@ -78,12 +72,12 @@ public class VideoUploadServiceImpl implements VideoUploadService {
         return null;
     }
 
-    private void saveOriginal(MultipartFile videoFile, UUID videoId) throws IOException {
+    private String saveOriginal(MultipartFile videoFile, UUID videoId) throws IOException {
         // Создаем директорию для видео
         Path videoDir = Paths.get(tempDir, videoId.toString());
         Files.createDirectories(videoDir);
 
-        String extension = fileUtilService.getFileExtension(videoFile.getOriginalFilename());
+        String extension = fileService.getFileExtension(videoFile.getOriginalFilename());
         
         // Путь к файлу оригинала
         Path originalPath = videoDir.resolve("original." + extension);
@@ -96,6 +90,8 @@ public class VideoUploadServiceImpl implements VideoUploadService {
         }
         
         log.info("Original video saved to: {}", originalPath);
+
+        return originalPath.toString();
     }
 }
 

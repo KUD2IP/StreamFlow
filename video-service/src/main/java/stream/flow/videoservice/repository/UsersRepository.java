@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface UsersRepository extends JpaRepository<Users, UUID> {
     
     Optional<Users> findByKeycloakId(String keycloakId);
+
+    boolean existsByKeycloakId(String keycloakId);
     
     Optional<Users> findByUsername(String username);
     

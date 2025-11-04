@@ -4,5 +4,10 @@ import stream.flow.videoservice.model.dto.response.UserResponse;
 
 public interface UserService {
 
-    UserResponse getCurrentUser();
+    /**
+     * Синхронизирует текущего пользователя из Keycloak
+     * Вызывается явно через API /users/sync
+     */
+    UserResponse syncUser();
+
 }

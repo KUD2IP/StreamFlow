@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 
 interface CreateVideoModalContextType {
   isOpen: boolean;
-  openModal: () => void;
+  videoId: string | null;
+  openModal: (videoId?: string) => void;
   closeModal: () => void;
 }
 
@@ -15,12 +16,20 @@ interface CreateVideoModalProviderProps {
 
 export function CreateVideoModalProvider({ children }: CreateVideoModalProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [videoId, setVideoId] = useState<string | null>(null);
 
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
+  const openModal = (videoId?: string) => {
+    setVideoId(videoId || null);
+    setIsOpen(true);
+  };
+  
+  const closeModal = () => {
+    setIsOpen(false);
+    setVideoId(null);
+  };
 
   return (
-    <CreateVideoModalContext.Provider value={{ isOpen, openModal, closeModal }}>
+    <CreateVideoModalContext.Provider value={{ isOpen, videoId, openModal, closeModal }}>
       {children}
     </CreateVideoModalContext.Provider>
   );

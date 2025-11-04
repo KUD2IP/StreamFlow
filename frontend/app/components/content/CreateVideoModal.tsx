@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { videoApi } from '~/services/videoApi';
 import { useAuth } from '~/contexts/AuthContext';
+import { useCreateVideoModal } from '~/contexts/CreateVideoModalContext';
 
 interface CreateVideoModalProps {
   isOpen: boolean;
@@ -9,42 +10,29 @@ interface CreateVideoModalProps {
 
 export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
   const { isAuthenticated, token } = useAuth();
+  const { videoId: contextVideoId } = useCreateVideoModal();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [createdVideoId, setCreatedVideoId] = useState<string | null>(null);
+  const [createdVideoId, setCreatedVideoId] = useState<string | null>(contextVideoId || null);
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    visibility: 'PUBLIC' as 'PUBLIC' | 'PRIVATE' | 'SUBSCRIBERS',
-    tagIds: [] as string[]
+    visibility: 'PUBLIC' as 'PUBLIC' | 'PRIVATE' | 'SUBSCRIBERS'
   });
-  
-  const [availableTags, setAvailableTags] = useState<{ id: string; name: string }[]>([]);
-  const [isLoadingTags, setIsLoadingTags] = useState(false);
 
-  // Загружаем теги при открытии модального окна
   useEffect(() => {
     if (isOpen) {
-      loadTags();
+      // Если videoId передан из контекста (файл уже загружен), переходим сразу к шагу 1
+      if (contextVideoId) {
+        setCreatedVideoId(contextVideoId);
+        setCurrentStep(1);
+      }
     }
-  }, [isOpen]);
-
-  const loadTags = async () => {
-    setIsLoadingTags(true);
-    try {
-      const tags = await videoApi.getTags();
-      setAvailableTags(tags);
-    } catch (error) {
-      console.error('Ошибка загрузки тегов:', error);
-      // Не показываем ошибку пользователю, так как теги не критичны
-    } finally {
-      setIsLoadingTags(false);
-    }
-  };
+  }, [isOpen, contextVideoId]);
 
   const handleInputChange = (field: string, value: string | string[]) => {
     setFormData(prev => ({
@@ -53,17 +41,10 @@ export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
     }));
   };
 
-  const handleTagToggle = (tagId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tagIds: prev.tagIds.includes(tagId)
-        ? prev.tagIds.filter(id => id !== tagId)
-        : [...prev.tagIds, tagId]
-    }));
-  };
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    const maxSteps = createdVideoId ? 2 : 3;
+    if (currentStep < maxSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -80,15 +61,11 @@ export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
       return;
     }
 
-    if (!videoFile) {
-      setError('Пожалуйста, выберите видео файл');
-      return;
-    }
-
-    // Проверяем размер файла (10GB = 10 * 1024 * 1024 * 1024 bytes)
-    const maxFileSize = 10 * 1024 * 1024 * 1024; // 10GB
-    if (videoFile.size > maxFileSize) {
-      setError('Размер файла превышает максимально допустимый лимит (10GB). Выберите файл меньшего размера.');
+    // Если videoId уже есть (файл уже загружен), используем его
+    const videoIdToUse = createdVideoId;
+    
+    if (!videoIdToUse) {
+      setError('Не найден ID видео. Пожалуйста, загрузите файл сначала.');
       return;
     }
 
@@ -96,22 +73,16 @@ export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
     setError(null);
 
     try {
-      // Шаг 1: Создаем видео с метаданными
-      const videoResponse = await videoApi.createVideo({
+      // Обновляем метаданные видео (файл уже загружен)
+      await videoApi.updateVideoMetadata(videoIdToUse, {
         title: formData.title,
         description: formData.description,
-        visibility: formData.visibility,
-        tagIds: formData.tagIds.length > 0 ? formData.tagIds : undefined
+        visibility: formData.visibility
       }, token || undefined);
 
-      setCreatedVideoId(videoResponse.id);
-
-      // Шаг 2: Загружаем видео файл
-      await videoApi.uploadVideo(videoResponse.id, videoFile, token || undefined);
-
-      // Шаг 3: Загружаем превью (если выбрано)
+      // Загружаем превью (если выбрано)
       if (thumbnailFile) {
-        await videoApi.uploadThumbnail(videoResponse.id, thumbnailFile, token || undefined);
+        await videoApi.uploadThumbnail(videoIdToUse, thumbnailFile, token || undefined);
       }
 
       // Успешно создано
@@ -141,14 +112,12 @@ export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
     setFormData({
       title: '',
       description: '',
-      visibility: 'PUBLIC',
-      tagIds: []
+      visibility: 'PUBLIC'
     });
     setVideoFile(null);
     setThumbnailFile(null);
     setCreatedVideoId(null);
     setError(null);
-    setAvailableTags([]);
   };
 
   const handleClose = () => {
@@ -186,39 +155,71 @@ export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
         {/* Progress Steps */}
         <div className="px-4 sm:px-6 py-4 border-b border-custom">
           <div className="flex items-start justify-center">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
-                <div className="flex flex-col items-center">
-                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
-                    step <= currentStep 
-                      ? 'bg-primary text-white' 
-                      : 'bg-surface-hover text-muted'
-                  }`}>
-                    {step}
+            {createdVideoId ? (
+              // Если файл уже загружен, показываем только 2 шага
+              [1, 2].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
+                      step <= currentStep 
+                        ? 'bg-primary text-white' 
+                        : 'bg-surface-hover text-muted'
+                    }`}>
+                      {step}
+                    </div>
+                    <span className="text-xs text-muted mt-1 sm:mt-2 text-center max-w-16 sm:max-w-20 leading-tight">
+                      {step === 1 && (
+                        <>
+                          <span className="hidden sm:inline">Основная информация</span>
+                          <span className="sm:hidden">Основная</span>
+                        </>
+                      )}
+                      {step === 2 && 'Превью'}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted mt-1 sm:mt-2 text-center max-w-16 sm:max-w-20 leading-tight">
-                    {step === 1 && (
-                      <>
-                        <span className="hidden sm:inline">Основная информация</span>
-                        <span className="sm:hidden">Основная</span>
-                      </>
-                    )}
-                    {step === 2 && (
-                      <>
-                        <span className="hidden sm:inline">Загрузка видео</span>
-                        <span className="sm:hidden">Видео</span>
-                      </>
-                    )}
-                    {step === 3 && 'Превью'}
-                  </span>
+                  {step < 2 && (
+                    <div className={`w-8 sm:w-16 h-0.5 mx-2 sm:mx-4 mt-3 sm:mt-4 ${
+                      step < currentStep ? 'bg-primary' : 'bg-surface-hover'
+                    }`} />
+                  )}
                 </div>
-                {step < 3 && (
-                  <div className={`w-8 sm:w-16 h-0.5 mx-2 sm:mx-4 mt-3 sm:mt-4 ${
-                    step < currentStep ? 'bg-primary' : 'bg-surface-hover'
-                  }`} />
-                )}
-              </div>
-            ))}
+              ))
+            ) : (
+              // Если файл не загружен, показываем все 3 шага (старый flow)
+              [1, 2, 3].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
+                      step <= currentStep 
+                        ? 'bg-primary text-white' 
+                        : 'bg-surface-hover text-muted'
+                    }`}>
+                      {step}
+                    </div>
+                    <span className="text-xs text-muted mt-1 sm:mt-2 text-center max-w-16 sm:max-w-20 leading-tight">
+                      {step === 1 && (
+                        <>
+                          <span className="hidden sm:inline">Основная информация</span>
+                          <span className="sm:hidden">Основная</span>
+                        </>
+                      )}
+                      {step === 2 && (
+                        <>
+                          <span className="hidden sm:inline">Загрузка видео</span>
+                          <span className="sm:hidden">Видео</span>
+                        </>
+                      )}
+                      {step === 3 && 'Превью'}
+                    </span>
+                  </div>
+                  {step < 3 && (
+                    <div className={`w-8 sm:w-16 h-0.5 mx-2 sm:mx-4 mt-3 sm:mt-4 ${
+                      step < currentStep ? 'bg-primary' : 'bg-surface-hover'
+                    }`} />
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -269,52 +270,27 @@ export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
                 <label className="block text-sm font-medium text-primary mb-2">
                   Видимость
                 </label>
-                <select
-                  value={formData.visibility}
-                  onChange={(e) => handleInputChange('visibility', e.target.value)}
-                  className="w-full px-4 py-3 border border-custom rounded-lg bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                >
-                  <option value="PUBLIC">Публичное</option>
-                  <option value="PRIVATE">Приватное</option>
-                  <option value="SUBSCRIBERS">Только подписчики</option>
-                </select>
-              </div>
-
-              {/* Tags */}
-              <div>
-                <label className="block text-sm font-medium text-primary mb-2">
-                  Теги (необязательно)
-                </label>
-                {isLoadingTags ? (
-                  <div className="text-muted text-sm">Загрузка тегов...</div>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {availableTags.map((tag) => (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        onClick={() => handleTagToggle(tag.id)}
-                        className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                          formData.tagIds.includes(tag.id)
-                            ? 'bg-primary text-white'
-                            : 'bg-surface-hover text-muted hover:bg-primary/10 hover:text-primary'
-                        }`}
-                      >
-                        {tag.name}
-                      </button>
-                    ))}
+                <div className="relative">
+                  <select
+                    value={formData.visibility}
+                    onChange={(e) => handleInputChange('visibility', e.target.value)}
+                    className="w-full px-4 py-3 pr-10 border border-custom rounded-lg bg-surface text-primary focus:outline-none focus:border-primary appearance-none cursor-pointer hover:border-primary/50 transition-colors"
+                  >
+                    <option value="PUBLIC">Публичное</option>
+                    <option value="PRIVATE">Приватное</option>
+                    <option value="SUBSCRIBERS">Только подписчики</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-5 h-5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                )}
-                {formData.tagIds.length > 0 && (
-                  <div className="text-xs text-muted mt-2">
-                    Выбрано тегов: {formData.tagIds.length}
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           )}
 
-          {currentStep === 2 && (
+          {currentStep === 2 && !createdVideoId && (
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-primary">Загрузка видео</h3>
               
@@ -386,7 +362,7 @@ export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
             </div>
           )}
 
-          {currentStep === 3 && (
+          {((currentStep === 2 && createdVideoId) || currentStep === 3) && (
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-primary">Превью (необязательно)</h3>
               
@@ -483,36 +459,71 @@ export function CreateVideoModal({ isOpen, onClose }: CreateVideoModalProps) {
               Отмена
             </button>
             
-            {currentStep < 3 ? (
-              <button
-                onClick={handleNext}
-                disabled={
-                  isLoading || 
-                  (currentStep === 1 && (!formData.title || !formData.description)) ||
-                  (currentStep === 2 && !videoFile)
-                }
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Далее
-              </button>
+            {createdVideoId ? (
+              // Если файл уже загружен, показываем только 2 шага
+              currentStep < 2 ? (
+                <button
+                  onClick={handleNext}
+                  disabled={
+                    isLoading || 
+                    (currentStep === 1 && (!formData.title || !formData.description))
+                  }
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Далее
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isLoading || !formData.title || !formData.description}
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Сохранение...
+                    </>
+                  ) : (
+                    'Сохранить видео'
+                  )}
+                </button>
+              )
             ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={isLoading || !videoFile}
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Создание...
-                  </>
-                ) : (
-                  'Создать видео'
-                )}
-              </button>
+              // Старый flow (если файл не загружен)
+              currentStep < 3 ? (
+                <button
+                  onClick={handleNext}
+                  disabled={
+                    isLoading || 
+                    (currentStep === 1 && (!formData.title || !formData.description)) ||
+                    (currentStep === 2 && !videoFile)
+                  }
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Далее
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isLoading || !videoFile}
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Создание...
+                    </>
+                  ) : (
+                    'Создать видео'
+                  )}
+                </button>
+              )
             )}
           </div>
         </div>

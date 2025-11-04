@@ -11,12 +11,10 @@ public interface StorageService {
     /**
      * Загружает файл в хранилище
      * 
-     * @param file файл для загрузки
-     * @param bucketName имя bucket/контейнера
-     * @param fileName имя файла для сохранения
+     * @param path - путь до файла
      * @return URL загруженного файла
      */
-    String uploadFile(MultipartFile file, String bucketName, String fileName);
+    String uploadFile(String path, String bucketName);
 
     /**
      * Проверяет существование bucket

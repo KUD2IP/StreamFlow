@@ -18,21 +18,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserRequest {
     
-    private UUID id;
+    private String keycloakId;
     private String username;
     private String email;
     private String firstName;
     private String lastName;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    
-    /**
-     * Создает DTO только с базовой информацией для синхронизации
-     */
-    public static UserRequest forSync(UUID id, String username) {
-        return UserRequest.builder()
-                .id(id)
-                .username(username)
-                .build();
-    }
+
 }

@@ -71,3 +71,9 @@ export interface CreateVideoResponse {
     name: string;
   }>;
 }
+
+export interface VideoUploadResponse {
+  videoId: string;
+  status: 'UPLOADING' | 'PROCESSING' | 'READY' | 'FAILED';
+  message: string;
+}

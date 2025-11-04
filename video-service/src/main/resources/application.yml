@@ -55,11 +55,24 @@ minio:
   bucket:
     videos: streamflow-videos
     thumbnails: streamflow-thumbnails
-  url-expiry: 3600 # 1 hour in seconds
+  url-expiry: 3600 # 1 h
 
 # File Upload Configuration
 file:
   upload:
-    max-size: 10485760000  # 10GB in bytes
+    max-size: 10485760000  # 10GB
     allowed-video-types: mp4,avi,mov,mkv,webm
     allowed-image-types: jpg,jpeg,png,gif,webp
+
+# Video Processing Configuration
+video:
+  temp-dir: ./video-temp
+
+# FFmpeg Configuration
+ffmpeg:
+  probe-path: ffprobe
+  ffmpeg-path: ffmpeg
+  conversion:
+    preset: medium  # Пресет для конвертации (ultrafast, fast, medium, slow, veryslow)
+    crf: 23  # Constant Rate Factor (18-28, меньше = лучше качество, больше = меньше размер)
+    audio-bitrate: 128  # Битрейт аудио в kbps

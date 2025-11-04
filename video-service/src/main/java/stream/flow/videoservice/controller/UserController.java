@@ -27,7 +27,7 @@ public class UserController {
     public ResponseEntity<UserResponse> syncCurrentUser() {
         log.info("Syncing current user from Keycloak");
         
-        UserResponse userResponse = userService.getCurrentUser();
+        UserResponse userResponse = userService.syncUser();
 
         log.info("Successfully synced user: {}", userResponse.getUsername());
         return ResponseEntity.ok(userResponse);

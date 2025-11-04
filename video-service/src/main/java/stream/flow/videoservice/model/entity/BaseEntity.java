@@ -1,5 +1,6 @@
 package stream.flow.videoservice.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,14 +23,17 @@ public abstract class BaseEntity {
     private UUID id;
 
     @CreatedDate
+    @JsonIgnore
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @JsonIgnore
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @Version
+    @JsonIgnore
     @Column(name = "version")
     private Long version;
 }

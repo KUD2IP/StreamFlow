@@ -27,5 +27,5 @@ public class VideoCreateRequest {
     @NotNull(message = "Visibility is required")
     private Visibility visibility;
 
-    private List<UUID> tagIds;
+//    private List<UUID> tagIds;
 }

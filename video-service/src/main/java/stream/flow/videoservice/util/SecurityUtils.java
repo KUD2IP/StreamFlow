@@ -1,14 +1,30 @@
 package stream.flow.videoservice.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
+import stream.flow.videoservice.model.dto.request.UserRequest;
 
+import java.util.UUID;
+
+/**
+ * Утилитный класс для работы с Spring Security контекстом.
+ * Использует статические методы для удобного доступа к информации о текущем пользователе.
+ * 
+ * Все методы работают с SecurityContextHolder, который является потокобезопасным
+ * и хранит контекст безопасности в ThreadLocal.
+ */
 @Slf4j
-@Component
-public class SecurityUtils {
+public final class SecurityUtils {
+
+    /**
+     * Приватный конструктор для предотвращения создания экземпляров утилитного класса.
+     */
+    private SecurityUtils() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
     /**
      * Получает ID пользователя из JWT токена
@@ -21,7 +37,7 @@ public class SecurityUtils {
         
         if (authentication == null || !authentication.isAuthenticated()) {
             log.warn("No authentication found in SecurityContext");
-            return null;
+            throw new AuthenticationServiceException("No authentication found in SecurityContext");
         }
 
         if (authentication.getPrincipal() instanceof Jwt jwt) {
@@ -32,7 +48,7 @@ public class SecurityUtils {
         }
 
         log.warn("Principal is not a JWT token");
-        return null;
+        throw new AuthenticationServiceException("Principal is not a JWT token");
     }
 
     /**
@@ -113,6 +129,24 @@ public class SecurityUtils {
         }
 
         return null;
+    }
+
+    public static UserRequest getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AuthenticationServiceException("No authentication found in SecurityContext");
+        }
+        if (authentication.getPrincipal() instanceof Jwt jwt) {
+           return UserRequest.builder()
+                   .keycloakId(jwt.getSubject())
+                   .email(jwt.getClaim("email"))
+                   .username(jwt.getClaim("preferred_username"))
+                   .firstName(jwt.getClaim("given_name"))
+                   .lastName( jwt.getClaim("family_name"))
+                   .build();
+        }
+
+        throw new AuthenticationServiceException("Principal is not a JWT token");
     }
 
     /**

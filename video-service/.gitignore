@@ -34,3 +34,6 @@ build/
 
 src/main/resources/.env
 /src/main/resources/liquibase.properties
+
+### Video Temp Directory ###
+video-temp/

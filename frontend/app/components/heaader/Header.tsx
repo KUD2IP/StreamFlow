@@ -1,5 +1,8 @@
+import { useState, useRef } from "react";
 import { AuthButton } from "./AuthButton";
 import { useCreateVideoModal } from "~/contexts/CreateVideoModalContext";
+import { useAuth } from "~/contexts/AuthContext";
+import { videoApi } from "~/services/videoApi";
 
 /**
  * Пропсы для компонента Header
@@ -14,7 +17,48 @@ interface HeaderProps {
  * Содержит: логотип, поиск, кнопки управления
  */
 export function Header({ isSidebarCompact, onToggleSidebar }: HeaderProps) {
-  const { openModal } = useCreateVideoModal();
+  const { openModal } = useCreateVideoModal(); // Используется для открытия модала после загрузки
+  const { isAuthenticated, token } = useAuth();
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTestUploadClick = () => {
+    if (!isAuthenticated) {
+      alert('Необходимо войти в систему для загрузки видео');
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!token) {
+      alert('Токен не найден');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      console.log('Загрузка видео файла:', file.name, 'Размер:', file.size);
+      const response = await videoApi.testUploadVideo(file, token);
+      console.log('Ответ сервера:', response);
+      
+      // Открываем модал для заполнения данных видео с полученным videoId
+      openModal(response.videoId);
+    } catch (error) {
+      console.error('Ошибка загрузки:', error);
+      console.error('Детали ошибки:', error instanceof Error ? error.stack : error);
+      alert(`Ошибка загрузки: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
+    } finally {
+      setIsUploading(false);
+      // Очищаем input для возможности повторной загрузки того же файла
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-surface/60 backdrop-blur-md">
@@ -65,15 +109,33 @@ export function Header({ isSidebarCompact, onToggleSidebar }: HeaderProps) {
 
         {/* Правая часть - действия пользователя */}
         <div className="flex items-center gap-1 sm:gap-4">
-          {/* Кнопка создания контента */}
+          {/* Скрытый input для выбора файла */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={isUploading}
+          />
+          
+          {/* Кнопка загрузки видео */}
           <button 
-            onClick={openModal}
-            className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
-            title="Создать видео"
+            onClick={handleTestUploadClick}
+            className="p-2 rounded-lg hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Загрузить видео"
+            disabled={isUploading}
           >
-            <svg className="h-4 w-4 sm:h-5 sm:w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+            {isUploading ? (
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-primary animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            )}
           </button>
           
           {/* Кнопка уведомлений с бейджем */}

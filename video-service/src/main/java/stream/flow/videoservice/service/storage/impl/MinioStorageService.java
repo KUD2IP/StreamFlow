@@ -1,18 +1,18 @@
 package stream.flow.videoservice.service.storage.impl;
 
 import io.minio.*;
-import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import stream.flow.videoservice.exception.file.FileUploadException;
 import stream.flow.videoservice.service.storage.StorageService;
-import stream.flow.videoservice.service.validation.FileUtilService;
+import stream.flow.videoservice.service.file.FileService;
 
-import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Slf4j
 @Service
@@ -20,34 +20,48 @@ import java.util.concurrent.TimeUnit;
 public class MinioStorageService implements StorageService {
 
     private final MinioClient minioClient;
-    private final FileUtilService fileUtilService;
+    private final FileService fileService;
 
-    @Value("${minio.url-expiry:3600}")
-    private int defaultUrlExpiry;
+    @Value("${video.temp-dir}")
+    private String tempDir;
 
     @Override
-    public String uploadFile(MultipartFile file, String bucketName, String fileName) {
+    public String uploadFile(String path, String bucketName) {
         try {
             createBucketIfNotExists(bucketName);
 
-            String contentType = fileUtilService.getContentType(file.getOriginalFilename());
-            
-            try (InputStream inputStream = file.getInputStream()) {
+            Path filePath = Paths.get(path);
+            if (!Files.exists(filePath)) {
+                throw new FileNotFoundException("Input file not found: " + path);
+            }
+
+            // Например: "./video-temp/e832d10e/p720.mp4" -> "e832d10e/p720.mp4"
+            Path tempDirPath = Paths.get(tempDir);
+            String relativePath = tempDirPath.relativize(filePath).toString();
+
+            String objectName = filePath.getFileName().toString();
+
+            // Определяем contentType
+            String extension = fileService.getFileExtension(objectName);
+            String contentType = "video/" + extension;
+
+            long fileSize = Files.size(filePath);
+
+            try (InputStream inputStream = Files.newInputStream(filePath)) {
                 minioClient.putObject(
-                    PutObjectArgs.builder()
-                        .bucket(bucketName)
-                        .object(fileName)
-                        .stream(inputStream, file.getSize(), -1)
-                        .contentType(contentType)
-                        .build()
+                        PutObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(relativePath)
+                                .stream(inputStream, fileSize, -1)
+                                .contentType(contentType)
+                                .build()
                 );
             }
 
-            log.info("File uploaded successfully to MinIO: bucket={}, file={}", bucketName, fileName);
-            
-            // Возвращаем постоянный путь к файлу
-            return String.format("%s/%s", bucketName, fileName);
-            
+            log.info("File uploaded successfully to MinIO: bucket={}, object={}", bucketName, relativePath);
+
+            return String.format("%s/%s", bucketName, relativePath);
+
         } catch (Exception e) {
             log.error("Failed to upload file to MinIO: {}", e.getMessage(), e);
             throw new FileUploadException("Failed to upload file to storage", e);

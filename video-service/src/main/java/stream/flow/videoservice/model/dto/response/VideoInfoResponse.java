@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class VideoQualityResponse {
+public class VideoInfoResponse {
 
     private Integer duration;
     private Long filesize;

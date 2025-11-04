@@ -3,10 +3,10 @@ version: '3.8'
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:latest
-    command: start-dev
+    command: start-dev --import-realm
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: keycloak
@@ -15,6 +15,7 @@ services:
       - "8080:8080"
     volumes:
       - ../../keycloak-theme/streamflow:/opt/keycloak/themes/streamflow
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
     depends_on:
       - postgres
     networks:
